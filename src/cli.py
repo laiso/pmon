@@ -7,13 +7,12 @@ import subprocess
 import argparse
 
 
-from llm import recursive_create_patch
+from .llm import recursive_create_patch
 
 def main():
     parser = argparse.ArgumentParser(description="A CLI tool to generate and apply patches based on user requirements.")
     parser.add_argument('path', type=str, help='Path to the file')
     parser.add_argument('--requirement', '-r', type=str)
-    parser.add_argument('--load', '-l', type=str)
     parser.add_argument('--model', '-m', type=str, default='gpt-3.5-turbo', help='OpenAI model (default: gpt-3.5-turbo)')
     parser.add_argument('--out-dir', '-o', type=str, default='out/patches', help='Output directory (default: out)')
     parser.add_argument('--retry', type=int, default=3, help='Maximum retry count (default: 3)')
@@ -21,9 +20,6 @@ def main():
 
     current_directory = os.path.abspath(os.path.dirname(__file__))
     path = args.path
-    load = args.load
-    if not load:
-        load = path
     model_name = args.model
 
     patch_dir = os.path.realpath(os.path.join(current_directory, args.out_dir))
@@ -38,14 +34,14 @@ def main():
 
     while retry_count < max_retry_count:
         try:
-            patch_content = recursive_create_patch(path, load, requirement, model_name)
+            patch_content = recursive_create_patch(path, requirement, model_name)
             patch_path = os.path.join(patch_dir, f"{datetime.now().strftime('%Y%m%d-%H%M%S')}.patch")
-            with open(patch_path, "a") as tmpfile:
+            with open(patch_path, "w") as tmpfile:
                 tmpfile.write(patch_content)
             print("Do you want to apply this patch? " + patch_path)
             user_input = input(f"Yes or No or Retry or Quit (Y/n/r/q): ") or 'y'
             if user_input.lower() == 'y':
-                cmd = f"patch --no-backup-if-mismatch < {patch_path}"
+                cmd = f"patch --no-backup-if-mismatch --ignore-whitespace < {patch_path}"
                 subprocess.run(cmd, shell=True, check=True)
                 print("The patch has been applied.")
                 requirement = input('What\'s next?:\n')
@@ -59,9 +55,8 @@ def main():
 
             retry_count = 0
         except IndexError as e:
-            print("Invalid Response：")
-            print(e)
+            logging.error("Invalid Response：")
             retry_count += 1
         except subprocess.CalledProcessError as e:
-            print("Invalid Patch：" + "".join(e.args[-1]))
+            logging.error("Invalid Patch：" + "".join(e.args[-1]))
             retry_count += 1

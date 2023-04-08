@@ -1,10 +1,9 @@
 import mimetypes
-import sys
 import os
 
 import openai
 
-from text import extract_diff
+from .text import extract_diff
 
 
 def create_patch(files, requirement, model_name="gpt-3.5-turbo"):
@@ -14,7 +13,7 @@ def create_patch(files, requirement, model_name="gpt-3.5-turbo"):
             content = file.read()
             code += f"```{path}" + "\n" + content + "\n```\n"
     prompt = [
-        {"role": "system", "content": f"""You are a code generator that generates diff PATCH. 
+        {"role": "system", "content": f"""You are the assistant to write source code. You generate patches according to requirement from user. 
         The output should be a single markdown code snippet formatted in Unified Diff speciofication.:
 ```diff
 --- file.txt	2021-09-01 00:00:00.000000000 +0900
@@ -26,17 +25,13 @@ def create_patch(files, requirement, model_name="gpt-3.5-turbo"):
 +Here is a new line added in the new file.
  This line is present in both files.
 -The old file has this line, but it has been removed in the new file.
-\ No newline at end of file
-+The old file has this line, but it has been removed in the new file.
-+And a newline has been added at the end of the file.
 ```"""},
-        {"role": "user", "content": f"""Please make a PATCH to fulfill the requirement.
-        Requirement: {requirement}
-        
-        Code: 
-        {code}
-        
-        Patch:"""}
+        {"role": "user", "content": f"""Code: 
+{code}
+
+Requirement: {requirement}
+
+Patch:"""}
     ]
     response = openai.ChatCompletion.create(model=model_name, temperature=0.0, stream=True, messages=prompt)
 
@@ -50,7 +45,7 @@ def create_patch(files, requirement, model_name="gpt-3.5-turbo"):
     return extract_diff(full_reply_content)
 
 
-def recursive_create_patch(path, load, requirement, model_name="gpt-3.5-turbo") -> str:
+def recursive_create_patch(path, requirement, model_name="gpt-3.5-turbo") -> str:
     paths = []
     if os.path.isfile(path):
         paths.append(path)
