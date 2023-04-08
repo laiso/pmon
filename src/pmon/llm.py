@@ -13,9 +13,9 @@ def create_patch(files, requirement, model_name="gpt-3.5-turbo"):
             content = file.read()
             code += f"```{path}" + "\n" + content + "\n```\n"
     prompt = [
-        {"role": "system", "content": f"""You are the assistant to write source code. You generate patches according to requirement from user. 
-        The output should be a single markdown code snippet formatted in Unified Diff speciofication.:
-```diff
+        {"role": "system", "content": "You are the assistant to write source code. You generate patches according to requirement from user." +
+    "The output should be a single markdown code snippet formatted in Unified Diff speciofication.:" +
+f"""```diff
 --- file.txt	2021-09-01 00:00:00.000000000 +0900
 +++ file.txt	2021-09-01 00:10:00.000000000 +0900
 @@ -1,5 +1,6 @@
