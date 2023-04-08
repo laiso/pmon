@@ -6,8 +6,29 @@ from datetime import datetime
 import subprocess
 import argparse
 
-
 from .llm import recursive_create_patch
+
+
+def process_patch(path, requirement, model_name, patch_dir):
+    patch_content = recursive_create_patch(path, requirement, model_name)
+    patch_path = os.path.join(patch_dir, f"{datetime.now().strftime('%Y%m%d-%H%M%S')}.patch")
+    with open(patch_path, "w") as tmpfile:
+        tmpfile.write(patch_content)
+    print("Do you want to apply this patch? " + patch_path)
+    user_input = input(f"Yes or No or Retry or Quit (Y/n/r/q): ") or 'y'
+    if user_input.lower() == 'y':
+        cmd = f"patch --no-backup-if-mismatch --ignore-whitespace < {patch_path}"
+        subprocess.run(cmd, shell=True, check=True)
+        print("The patch has been applied.")
+        return input('What\'s next?:\n')
+    elif user_input.lower() == 'r':
+        print("Patch not applied.")
+        return requirement
+    elif user_input.lower() == 'n':
+        return input('Please enter a new requirement:\n')
+    elif user_input.lower() == 'q':
+        sys.exit(0)
+
 
 def main():
     parser = argparse.ArgumentParser(description="A CLI tool to generate and apply patches based on user requirements.")
@@ -18,7 +39,7 @@ def main():
     parser.add_argument('--retry', type=int, default=3, help='Maximum retry count (default: 3)')
     args = parser.parse_args()
 
-    current_directory = os.path.abspath(os.path.dirname(__file__))
+    current_directory = os.getcwd()
     path = args.path
     model_name = args.model
 
@@ -32,27 +53,9 @@ def main():
     retry_count = 0
     max_retry_count: int = args.retry
 
-    while retry_count < max_retry_count:
+    while retry_count <= max_retry_count:
         try:
-            patch_content = recursive_create_patch(path, requirement, model_name)
-            patch_path = os.path.join(patch_dir, f"{datetime.now().strftime('%Y%m%d-%H%M%S')}.patch")
-            with open(patch_path, "w") as tmpfile:
-                tmpfile.write(patch_content)
-            print("Do you want to apply this patch? " + patch_path)
-            user_input = input(f"Yes or No or Retry or Quit (Y/n/r/q): ") or 'y'
-            if user_input.lower() == 'y':
-                cmd = f"patch --no-backup-if-mismatch --ignore-whitespace < {patch_path}"
-                subprocess.run(cmd, shell=True, check=True)
-                print("The patch has been applied.")
-                requirement = input('What\'s next?:\n')
-            elif user_input.lower() == 'r':
-                print("Patch not applied.")
-            elif user_input.lower() == 'n':
-                requirement = input('Please enter a new requirement:\n')
-                continue
-            elif user_input.lower() == 'q':
-                sys.exit(0)
-
+            process_patch(path, requirement, model_name, patch_dir)
             retry_count = 0
         except IndexError as e:
             logging.error("Invalid Response：")
