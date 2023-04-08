@@ -8,6 +8,6 @@ setup(
         "openai",
     ],
     entry_points={
-        "console_scripts": ["pmon=src.cli:main"],
+        "console_scripts": ["pmon=src.pmon.cli:main"],
     },
 )

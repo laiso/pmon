@@ -14,18 +14,18 @@ def process_patch(path, requirement, model_name, patch_dir):
     patch_path = os.path.join(patch_dir, f"{datetime.now().strftime('%Y%m%d-%H%M%S')}.patch")
     with open(patch_path, "w") as tmpfile:
         tmpfile.write(patch_content)
-    print("Do you want to apply this patch? " + patch_path)
+    print(">>>Do you want to apply this patch? " + patch_path)
     user_input = input(f"Yes or No or Retry or Quit (Y/n/r/q): ") or 'y'
     if user_input.lower() == 'y':
         cmd = f"patch --no-backup-if-mismatch --ignore-whitespace < {patch_path}"
         subprocess.run(cmd, shell=True, check=True)
         print("The patch has been applied.")
-        return input('What\'s next?:\n')
+        return input('>>>Enter a new requirement:\n')
     elif user_input.lower() == 'r':
         print("Patch not applied.")
         return requirement
     elif user_input.lower() == 'n':
-        return input('Please enter a new requirement:\n')
+        return input('>>>Enter a new requirement:\n')
     elif user_input.lower() == 'q':
         sys.exit(0)
 
@@ -48,14 +48,14 @@ def main():
 
     requirement = args.requirement
     if not requirement:
-        requirement = input('How do you want to change the code? (e.g. "Add test case for generate()"):\n')
+        requirement = input('>>>How do you want to change the code? (e.g. "Add test case for generate()"):\n')
 
     retry_count = 0
     max_retry_count: int = args.retry
 
     while retry_count <= max_retry_count:
         try:
-            process_patch(path, requirement, model_name, patch_dir)
+            requirement = process_patch(path, requirement, model_name, patch_dir)
             retry_count = 0
         except IndexError as e:
             logging.error("Invalid Response：")
