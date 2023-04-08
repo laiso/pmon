@@ -1,4 +1,5 @@
 import mimetypes
+import sys
 import os
 
 import openai
@@ -49,7 +50,7 @@ def create_patch(files, requirement, model_name="gpt-3.5-turbo"):
     return extract_diff(full_reply_content)
 
 
-def recursive_create_patch(path, requirement, model_name="gpt-3.5-turbo") -> str:
+def recursive_create_patch(path, load, requirement, model_name="gpt-3.5-turbo") -> str:
     paths = []
     if os.path.isfile(path):
         paths.append(path)

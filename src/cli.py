@@ -10,19 +10,23 @@ import argparse
 from llm import recursive_create_patch
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description="A CLI tool to generate and apply patches based on user requirements.")
     parser.add_argument('path', type=str, help='Path to the file')
     parser.add_argument('--requirement', '-r', type=str)
+    parser.add_argument('--load', '-l', type=str)
     parser.add_argument('--model', '-m', type=str, default='gpt-3.5-turbo', help='OpenAI model (default: gpt-3.5-turbo)')
-    parser.add_argument('--dir', '-d', type=str, default='out/patches', help='Output directory (default: out)')
+    parser.add_argument('--out-dir', '-o', type=str, default='out/patches', help='Output directory (default: out)')
     parser.add_argument('--retry', type=int, default=3, help='Maximum retry count (default: 3)')
     args = parser.parse_args()
 
-    current_directory = os.getcwd()
+    current_directory = os.path.abspath(os.path.dirname(__file__))
     path = args.path
+    load = args.load
+    if not load:
+        load = path
     model_name = args.model
 
-    patch_dir = os.path.realpath(os.path.join(current_directory, args.dir))
+    patch_dir = os.path.realpath(os.path.join(current_directory, args.out_dir))
     pathlib.Path(patch_dir).mkdir(parents=True, exist_ok=True)
 
     requirement = args.requirement
@@ -34,7 +38,7 @@ def main():
 
     while retry_count < max_retry_count:
         try:
-            patch_content = recursive_create_patch(path, requirement, model_name)
+            patch_content = recursive_create_patch(path, load, requirement, model_name)
             patch_path = os.path.join(patch_dir, f"{datetime.now().strftime('%Y%m%d-%H%M%S')}.patch")
             with open(patch_path, "a") as tmpfile:
                 tmpfile.write(patch_content)
