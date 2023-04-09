@@ -16,8 +16,8 @@ def create_patch(files, requirement, model_name="gpt-3.5-turbo"):
         {"role": "system", "content": "You are the assistant to write source code. You generate patches according to requirement from user." +
     "The output should be a single markdown code snippet formatted:" +
 """```diff
---- examples/python/simple.py   2023-04-09 10:00:10
-+++ examples/python/simple.py.orig      2023-04-09 10:01:37
+--- path/to/file.orig
++++ path/to/file
 @@ -1,5 +1,5 @@
  def main():
 -    print("Hello, World!")
@@ -27,26 +27,7 @@ def create_patch(files, requirement, model_name="gpt-3.5-turbo"):
      main()
 ```"""},
         {"role": "user", "content": f"""Code: 
-```examples/python/simple.py
-def main():
-    print("Hello, World!")
-```
-
-Requirement: replace "Hello, World!" with "Hello, New World!".
-
-Patch:"""},
-        {"role": "assistant", "content": f"""```diff
---- examples/python/simple.py   2023-04-09 10:00:10
-+++ examples/python/simple.py.orig      2023-04-09 10:01:37
-@@ -1,2 +1,2 @@
- def main():
--    print("Hello, World!")
-\ No newline at end of file
-+    print("Hello, New World!")
-```"""},
-        {"role": "user", "content": f"""Code: 
 {code}
-
 Requirement: {requirement}
 
 Patch:"""}
@@ -72,8 +53,6 @@ def recursive_create_patch(path, requirement, model_name="gpt-3.5-turbo") -> str
             for file in files:
                 mimetype, _ = mimetypes.guess_type(file)
                 if not mimetype:
-                    continue
-                if not mimetype.startswith("text/"):
                     continue
                 file_path = os.path.join(root, file)
                 paths.append(file_path)

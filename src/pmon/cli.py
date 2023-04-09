@@ -17,7 +17,7 @@ def process_patch(path, requirement, model_name, patch_dir):
     print(">>>Do you want to apply this patch? " + patch_path)
     user_input = input(f"Yes or No or Retry or Quit (Y/n/r/q): ") or 'y'
     if user_input.lower() == 'y':
-        cmd = f"patch --no-backup-if-mismatch --ignore-whitespace < {patch_path}"
+        cmd = f"patch < {patch_path}"
         subprocess.run(cmd, shell=True, check=True)
         print("The patch has been applied.")
         return input('>>>Enter a new requirement:\n')
