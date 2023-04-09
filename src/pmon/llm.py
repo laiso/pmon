@@ -30,9 +30,6 @@ def create_patch(files, requirement, model_name="gpt-3.5-turbo"):
 ```examples/python/simple.py
 def main():
     print("Hello, World!")
-
-if __name__ == "__main__":
-    main()
 ```
 
 Requirement: replace "Hello, World!" with "Hello, New World!".
@@ -41,13 +38,11 @@ Patch:"""},
         {"role": "assistant", "content": f"""```diff
 --- examples/python/simple.py   2023-04-09 10:00:10
 +++ examples/python/simple.py.orig      2023-04-09 10:01:37
-@@ -1,5 +1,5 @@
+@@ -1,2 +1,2 @@
  def main():
 -    print("Hello, World!")
+\ No newline at end of file
 +    print("Hello, New World!")
- 
- if __name__ == "__main__":
-     main()
 ```"""},
         {"role": "user", "content": f"""Code: 
 {code}
