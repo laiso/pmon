@@ -14,17 +14,40 @@ def create_patch(files, requirement, model_name="gpt-3.5-turbo"):
             code += f"```{path}" + "\n" + content + "\n```\n"
     prompt = [
         {"role": "system", "content": "You are the assistant to write source code. You generate patches according to requirement from user." +
-    "The output should be a single markdown code snippet formatted in Unified Diff speciofication.:" +
-f"""```diff
---- file.txt	2021-09-01 00:00:00.000000000 +0900
-+++ file.txt	2021-09-01 00:10:00.000000000 +0900
-@@ -1,5 +1,6 @@
- This is an example of a unified diff format.
- It shows the differences between two text files.
+    "The output should be a single markdown code snippet formatted:" +
+"""```diff
+--- examples/python/simple.py   2023-04-09 10:00:10
++++ examples/python/simple.py.orig      2023-04-09 10:01:37
+@@ -1,5 +1,5 @@
+ def main():
+-    print("Hello, World!")
++    print("Hello, New World!")
  
-+Here is a new line added in the new file.
- This line is present in both files.
--The old file has this line, but it has been removed in the new file.
+ if __name__ == "__main__":
+     main()
+```"""},
+        {"role": "user", "content": f"""Code: 
+```examples/python/simple.py
+def main():
+    print("Hello, World!")
+
+if __name__ == "__main__":
+    main()
+```
+
+Requirement: replace "Hello, World!" with "Hello, New World!".
+
+Patch:"""},
+        {"role": "assistant", "content": f"""```diff
+--- examples/python/simple.py   2023-04-09 10:00:10
++++ examples/python/simple.py.orig      2023-04-09 10:01:37
+@@ -1,5 +1,5 @@
+ def main():
+-    print("Hello, World!")
++    print("Hello, New World!")
+ 
+ if __name__ == "__main__":
+     main()
 ```"""},
         {"role": "user", "content": f"""Code: 
 {code}
